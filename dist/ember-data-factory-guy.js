@@ -462,7 +462,9 @@ var FactoryGuy = {
 
     if (store.usingFixtureAdapter()) {
       store.setAssociationsForFixtureAdapter(modelType, modelName, fixture);
-      return this.pushFixture(modelType, fixture);
+      fixture = FactoryGuy.pushFixture(modelType, fixture);
+      store.loadModelForFixtureAdapter(modelType, fixture);
+      return fixture;
     } else {
       return store.makeModel(modelType, fixture);
     }
@@ -643,9 +645,11 @@ var FactoryGuy = {
     setAssociationsForFixtureAdapter: function (modelType, modelName, fixture) {
       var self = this;
       var adapter = this.adapterFor('application');
+
       Ember.get(modelType, 'relationshipsByName').forEach(function (relationship, name) {
+        var hasManyRelation, belongsToRecord;
         if (relationship.kind == 'hasMany') {
-          var hasManyRelation = fixture[relationship.key];
+          hasManyRelation = fixture[relationship.key];
           if (hasManyRelation) {
             $.each(fixture[relationship.key], function (index, object) {
               // used to require that the relationship was set by id,
@@ -663,7 +667,7 @@ var FactoryGuy = {
           }
         }
         if (relationship.kind == 'belongsTo') {
-          var belongsToRecord = fixture[relationship.key];
+          belongsToRecord = fixture[relationship.key];
           if (belongsToRecord) {
             if (typeof belongsToRecord == 'object') {
               FactoryGuy.pushFixture(relationship.type, belongsToRecord);
@@ -680,6 +684,27 @@ var FactoryGuy = {
         }
       });
     },
+
+    loadModelForFixtureAdapter: function(modelType, fixture) {
+      if (!Ember.isPresent(this.getById(modelType, fixture.id))) {
+        this.push(modelType, fixture);
+      }
+    },
+
+    preloadAssociationsForFixtureAdapter: function(modelType, fixture) {
+      var that = this;
+      var adapter = this.adapterFor('application');
+      var loaded = false;
+      Ember.get(modelType, 'relationshipsByName').forEach(function (relationship, name) {
+        var relation = fixture[relationship.key];
+        if (!loaded && relation) {
+          debugger;
+          store.push(modelType, fixture);
+          loaded = true;
+        }
+      });
+    },
+
     /**
      Before pushing the fixture to the store, do some preprocessing. Descend into the tree
      of object data, and convert child objects to record instances recursively.
