@@ -122,38 +122,56 @@ asyncTest("#makeFixture adds record to hasMany association array for which it be
   });
 });
 
-asyncTest("#makeFixture handles trait belongsTo associations in fixture", function () {
+asyncTest("#makeFixture handles trait reverse belongsTo associations in fixture", function () {
   var projectWithUser = store.makeFixture('project_with_user');
+  equal(Project.FIXTURES.length, 1);
   equal(User.FIXTURES.length, 1);
 
   store.find('user', 1).then(function (user) {
     var projects = user.get('projects');
+
     equal(projects.get('length'), 1, "adds hasMany records");
+    equal(projects.get('firstObject.id'), projectWithUser.id);
     equal(projects.get('firstObject.user.id'), 1, "sets belongsTo record");
     start();
   });
 });
 
-asyncTest("#makeFixture handles belongsTo association in fixture", function () {
-  debugger;
+asyncTest("#makeFixture handles primary belongsTo association in fixture", function () {
   var projectWithUser = store.makeFixture('project_with_user');
+  equal(Project.FIXTURES.length, 1);
   equal(User.FIXTURES.length, 1);
-  debugger;
 
   store.find('project', projectWithUser.id).then( function(project) {
-    console.log('a',project+'', project.id)
-    console.log('b',project.get('user')+'');
-    console.log('c',project.get('user').toJSON());
-    project.get('user').then(function(user) {
-      console.log('c',user.toJSON());
-      start();
-    });
- });
+    var user = project.get('user');
+    ok(user);
+    equal(user.get('id'), projectWithUser.user.id);
+    equal(user.get('projects.firstObject.id'), projectWithUser.id)
+
+    start();
+  });
 });
 
 asyncTest('#makeFixture handles hasMany association in fixture', function () {
+  var userWithProjects = store.makeFixture('user', 'with_projects');
+  equal(Project.FIXTURES.length, 2);
+  equal(User.FIXTURES.length, 1);
 
+  store.find('user', userWithProjects.id).then(function(user) {
+    var projects = user.get('projects');
+    equal(user.get('id'), userWithProjects.id);
+    equal(projects.get('length'), 2);
+    deepEqual(
+      projects.mapBy('id').sort(),
+      userWithProjects.projects.map(function(project){ return project.toString(); }).sort()
+    );
+
+    start();
+  });
 });
+
+//asyncTest('#makeFixture handles belongsTo deeply associated in fixture');
+//store.makeFixture('project', 'with_user_having_hats')
 
 asyncTest("#createRecord adds belongsTo association to records it hasMany of", function () {
   var user = store.makeFixture('user');

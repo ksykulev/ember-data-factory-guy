@@ -86,12 +86,14 @@
               // normalize that back to the id
               var id = object;
               if (Ember.typeOf(object) == 'object') {
+                FactoryGuy.pushFixture(relationship.type, object);
                 id = object.id;
                 hasManyRelation[index] = id;
               }
               var hasManyfixtures = adapter.fixturesForType(relationship.type);
-              var fixture = adapter.findFixtureById(hasManyfixtures, id);
-              fixture[modelName] = fixture.id;
+              var hasManyFixture = adapter.findFixtureById(hasManyfixtures, id);
+              hasManyFixture[modelName] = fixture.id;
+              self.loadModelForFixtureAdapter(relationship.type, hasManyFixture);
             });
           }
         }
@@ -109,29 +111,20 @@
               belongsTofixture[hasManyName] = [];
             }
             belongsTofixture[hasManyName].push(fixture.id);
+            self.loadModelForFixtureAdapter(relationship.type, belongsTofixture);
           }
         }
       });
     },
 
     loadModelForFixtureAdapter: function(modelType, fixture) {
-      if (!Ember.isPresent(this.getById(modelType, fixture.id))) {
-        this.push(modelType, fixture);
+      var storeModel = this.getById(modelType, fixture.id),
+          that = this;
+      if (!Ember.isPresent(storeModel) || storeModel.get('isEmpty')) {
+        Ember.run(function () {
+          that.push(modelType, Ember.copy(fixture, true));
+        });
       }
-    },
-
-    preloadAssociationsForFixtureAdapter: function(modelType, fixture) {
-      var that = this;
-      var adapter = this.adapterFor('application');
-      var loaded = false;
-      Ember.get(modelType, 'relationshipsByName').forEach(function (relationship, name) {
-        var relation = fixture[relationship.key];
-        if (!loaded && relation) {
-          debugger;
-          store.push(modelType, fixture);
-          loaded = true;
-        }
-      });
     },
 
     /**
