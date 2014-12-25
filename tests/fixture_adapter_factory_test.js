@@ -66,13 +66,15 @@ test("#resetModels clears the store of models, clears the FIXTURES arrays for ea
   }
 });
 
-test("Confirm traits work with DS.FixtureAdapter", function () {
+test("Confirm traits build relationships", function () {
   var project = store.makeFixture('project', 'big'),
       projectWithUser = store.makeFixture('project_with_admin');
 
+  equal(Project.FIXTURES.length, 2);
+  equal(User.FIXTURES.length, 1);
+
   equal(project.title, 'Big Project', 'Big trait changed name to "Big Project"');
-  ok(false);
-  projectWithUser.get('user');
+  equal(projectWithUser.user, 1, 'User created');
 });
 
 module('DS.Store with DS.FixtureAdapter', {
@@ -103,8 +105,6 @@ asyncTest("#makeFixture sets belongsTo on hasMany associations", function () {
 
   store.find('user', 1).then(function (user) {
     var projects = user.get('projects');
-    console.log(user+'', user.toJSON())
-    console.log(user+'', projects)
     equal(projects.get('length'), 1, "adds hasMany records");
     start();
   });
@@ -145,7 +145,7 @@ asyncTest("#makeFixture handles primary belongsTo association in fixture", funct
   store.find('project', projectWithUser.id).then( function(project) {
     var user = project.get('user');
     ok(user);
-    equal(user.get('id'), projectWithUser.user.id);
+    equal(user.get('id'), projectWithUser.user);
     equal(user.get('projects.firstObject.id'), projectWithUser.id)
 
     start();
@@ -170,8 +170,21 @@ asyncTest('#makeFixture handles hasMany association in fixture', function () {
   });
 });
 
-//asyncTest('#makeFixture handles belongsTo deeply associated in fixture');
-//store.makeFixture('project', 'with_user_having_hats')
+// TODO:: does not handle deeply embedded relationships yet..
+// asyncTest('#makeFixture handles belongsTo deeply associated in fixture', function () {
+//   var propertyOwnersProjects = store.makeFixture('property', 'with_owners_with_projects');
+//   equal(Property.FIXTURES.length, 1);
+//   equal(User.FIXTURES.length, 2);
+//   equal(Project.FIXTURES.length, 4);
+//
+//   store.find('property', propertyOwnersProjects.id).then(function(property) {
+//     var users = property.get('owners');
+//     users.each(function(user){
+//       user.get('projects');
+//     });
+//     start();
+//   });
+// });
 
 asyncTest("#createRecord adds belongsTo association to records it hasMany of", function () {
   var user = store.makeFixture('user');

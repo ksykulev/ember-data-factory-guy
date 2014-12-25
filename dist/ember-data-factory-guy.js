@@ -674,6 +674,7 @@ var FactoryGuy = {
             if (typeof belongsToRecord == 'object') {
               FactoryGuy.pushFixture(relationship.type, belongsToRecord);
               fixture[relationship.key] = belongsToRecord.id;
+              //self.setAssociationsForFixtureAdapter(relationship.type, relationship.key, belongsToRecord);
             }
             var hasManyName = self.findHasManyRelationshipNameForFixtureAdapter(relationship.type, relationship.parentType);
             var belongsToFixtures = adapter.fixturesForType(relationship.type);
@@ -693,7 +694,14 @@ var FactoryGuy = {
           that = this;
       if (!Ember.isPresent(storeModel) || storeModel.get('isEmpty')) {
         Ember.run(function () {
-          that.push(modelType, Ember.copy(fixture, true));
+          var dup = Ember.copy(fixture, true);
+          that.push(modelType, fixture);
+          //replace relationships back to ids instead of built ember objects
+          Ember.get(modelType, 'relationshipsByName').forEach(function (relationship, name) {
+            if(fixture[relationship.key]) {
+              fixture[relationship.key] = dup[relationship.key];
+            }
+          });
         });
       }
     },
