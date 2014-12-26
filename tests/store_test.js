@@ -67,6 +67,32 @@ asyncTest("no root", function() {
   });
 });
 
+asyncTest("no root replace data", function(){
+  var projectJson = {
+    id: '1',
+    title: 'monkey',
+    user: null
+  };
+  var u = FactoryGuy.make('user', { id: '1', name: 'banana' });
+  var p = FactoryGuy.make('project', { user: u.id});
+  store.find('user');
+
+  store.find('project').then(function(projects) {
+    var project = projects.get('firstObject'),
+        user = project.get('user');
+
+    equal(user.get('name'), u.name, 'Expected user name to be equal');
+    equal(user.get('id'), u.id, 'Expected user id to be equal');
+    equal(project.get('title'), p.title, 'Expected project title to equal');
+
+    store.pushPayload('project', projectJson);
+
+    ok(Ember.isEmpty(project.get('user')), 'Did not expect a user on project');
+    equal(project.get('title'), projectJson.title, 'Expected project title to equal');
+    start();
+  });
+});
+
 asyncTest("single root", function() {
   var userJson = {
     users: [{ id:'1', name:'monkey' }, { id:'2', name:'banana' }]

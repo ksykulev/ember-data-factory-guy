@@ -250,6 +250,7 @@
           //pushPayload('user', {id:..})
           model = this.modelFor(type);
           FactoryGuy.pushFixture(model, payload);
+          this.push(model, Ember.copy(payload, true));
         } else if(Ember.typeOf(type) === 'object' || Ember.typeOf(payload) === 'object') {
           //pushPayload({users: {id:..}}) OR pushPayload('user', {users: {id:..}})
           if(Ember.isBlank(payload)){
