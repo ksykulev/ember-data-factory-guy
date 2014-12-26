@@ -186,8 +186,8 @@ asyncTest("replacing record", function() {
     ],
   };
 
-  var p = store.makeFixture('project');
-  store.makeFixture('user', { id: '1', name: 'banana', projects: [ p.id ] });
+  var p = FactoryGuy.make('project');
+  FactoryGuy.make('user', { id: '1', name: 'banana', projects: [ p.id ] });
   store.find('project');
 
   store.find('user').then(function(user) {
