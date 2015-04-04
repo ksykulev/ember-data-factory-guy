@@ -2,12 +2,13 @@ var testHelper, store;
 
 module('FactoryGuy with DS.FixtureAdapter', {
   setup: function () {
-    testHelper = TestHelper.setup(DS.FixtureAdapter);
+    testHelper = TestHelper.setup(DS.FixtureAdapter.extend());
     store = testHelper.getStore();
   },
   teardown: function () {
     Em.run(function () {
       testHelper.teardown();
+      store.destroy();
     });
   }
 });
@@ -25,6 +26,7 @@ test("#pushFixture adds fixture to Fixture array on model", function () {
 
 
 asyncTest("can change fixture attributes after creation", function () {
+  debugger;
   var user = FactoryGuy.make('user');
   notEqual(user.name, 'new name');
   user.name = "new name";
@@ -81,12 +83,13 @@ test("Confirm traits build relationships", function () {
 
 module('DS.Store with DS.FixtureAdapter', {
   setup: function () {
-    testHelper = TestHelper.setup(DS.FixtureAdapter);
+    testHelper = TestHelper.setup(DS.FixtureAdapter.extend());
     store = testHelper.getStore();
   },
   teardown: function () {
     Em.run(function () {
       testHelper.teardown();
+      store.destroy();
     });
   }
 });

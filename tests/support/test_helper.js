@@ -1,3 +1,11 @@
+window.Ember = window.Ember || {};
+Ember.config = {};
+Ember.testing = true;
+Ember.LOG_VERSION = false;
+
+window.ENV = { TESTING: true, LOG_VERSION: false };
+
+
 ObjectTransform = DS.Transform.extend({
   serialize: function(obj) {
     return obj ? JSON.parse(obj) : {};
@@ -56,42 +64,96 @@ TestHelper = Ember.Object.createWithMixins(FactoryGuy.testMixin,{
 (function (){
 
   window.setupStore = function(options) {
+    var container, registry;
+    var emberChannel = QUnit.urlParams.emberchannel || "release";
     var env = {};
     options = options || {};
 
-    var container = env.container = new Ember.Container();
+    if (emberChannel.match(/^beta|canary$/i)) {
+      registry = env.registry = new Ember.Registry();
+      container = env.container = registry.container();
+    } else {
+      container = env.container = new Ember.Container();
+      registry = env.registry = container;
+    }
+
+    env.replaceContainerNormalize = function replaceContainerNormalize(fn) {
+      if (env.registry) {
+        env.registry.normalize = fn;
+      } else {
+        env.container.normalize = fn;
+      }
+    }
 
     var adapter = env.adapter = (options.adapter || DS.Adapter);
     delete options.adapter;
 
     for (var prop in options) {
-      container.register('model:' + prop, options[prop]);
+      registry.register('model:' + prop, options[prop]);
     }
 
-    container.register('store:main', DS.Store.extend({
+    registry.register('store:main', DS.Store.extend({
       adapter: adapter
     }));
 
-    var serializer = DS.JSONSerializer;
-    if (adapter == DS.ActiveModelAdapter) {
-      serializer = DS.ActiveModelSerializer;
-    } else if (adapter == DS.RESTAdapter) {
-      serializer = DS.RESTSerializer;
-    }
+    registry.optionsForType('serializer', { singleton: false });
+    registry.optionsForType('adapter', { singleton: false });
 
-    container.register('serializer:-default', serializer);
-    container.register('transform:string', DS.StringTransform);
-    container.register('transform:date', DS.DateTransform);
-    container.register('transform:object', ObjectTransform);
-    container.injection('serializer', 'store', 'store:main');
+    registry.register('serializer:-default', DS.JSONSerializer);
+    registry.register('serializer:-rest', DS.RESTSerializer);
+    registry.register('adapter:-rest', DS.RESTAdapter);
 
-    Ember.setupForTesting()
+    registry.register('transform:string', DS.StringTransform);
+    registry.register('transform:date', DS.DateTransform);
+    registry.register('transform:object', ObjectTransform);
 
+    registry.injection('serializer', 'store', 'store:main');
+
+    env.serializer = container.lookup('serializer:-default');
+    env.restSerializer = container.lookup('serializer:-rest');
     env.store = container.lookup('store:main');
     env.adapter = env.store.get('defaultAdapter');
 
     return env;
-  };
+  }
+
+  // window.setupStore = function(options) {
+  //   var env = {};
+  //   options = options || {};
+  //
+  //   var container = env.container = new Ember.Container();
+  //
+  //   var adapter = env.adapter = (options.adapter || DS.Adapter);
+  //   delete options.adapter;
+  //
+  //   for (var prop in options) {
+  //     container.register('model:' + prop, options[prop]);
+  //   }
+  //
+  //   container.register('store:main', DS.Store.extend({
+  //     adapter: adapter
+  //   }));
+  //
+  //   var serializer = DS.JSONSerializer;
+  //   if (adapter == DS.ActiveModelAdapter) {
+  //     serializer = DS.ActiveModelSerializer;
+  //   } else if (adapter == DS.RESTAdapter) {
+  //     serializer = DS.RESTSerializer;
+  //   }
+  //
+  //   container.register('serializer:-default', serializer);
+  //   container.register('transform:string', DS.StringTransform);
+  //   container.register('transform:date', DS.DateTransform);
+  //   container.register('transform:object', ObjectTransform);
+  //   container.injection('serializer', 'store', 'store:main');
+  //
+  //   Ember.setupForTesting()
+  //
+  //   env.store = container.lookup('store:main');
+  //   env.adapter = env.store.get('defaultAdapter');
+  //
+  //   return env;
+  // };
 
   window.createStore = function(options) {
     return setupStore(options).store;

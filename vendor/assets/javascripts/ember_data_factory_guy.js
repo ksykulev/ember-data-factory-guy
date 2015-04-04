@@ -500,9 +500,9 @@ var FactoryGuy = {
       definition.reset();
       try {
         var modelType = store.modelFor(definition.model);
-        //if (store.usingFixtureAdapter()) {
-        //  modelType.FIXTURES = [];
-        //}
+        if (store.usingFixtureAdapter()) {
+         modelType.FIXTURES = [];
+        }
         store.unloadAll(modelType);
       } catch (e) {
         console.log('resetModels',e)
@@ -710,7 +710,7 @@ var MockUpdateRequest = function(url, model, mapFind, options) {
      @returns {Boolean} true if store's adapter is DS.FixtureAdapter
      */
     usingFixtureAdapter: function () {
-      var adapter = this.lookupAdapter('application');
+      var adapter = this.get('defaultAdapter');
       return adapter instanceof DS.FixtureAdapter;
     },
     /**
@@ -779,7 +779,7 @@ var MockUpdateRequest = function(url, model, mapFind, options) {
      */
     setAssociationsForFixtureAdapter: function (modelType, modelName, fixture) {
       var self = this;
-      var adapter = this.adapterFor('application');
+      var adapter = this.get('defaultAdapter');
 
       Ember.get(modelType, 'relationshipsByName').forEach(function (relationship, name) {
         var hasManyRelation, belongsToRecord;
@@ -1422,12 +1422,10 @@ if (FactoryGuy !== undefined) {
 				return null;
 			}
 		}
+
 		// Inspect the data submitted in the request (either POST body or GET query string)
 		if ( handler.data ) {
-//      console.log('request.data', requestSettings.data )
-//      console.log('handler.data', handler.data )
-//      console.log('data equal', isMockDataEqual(handler.data, requestSettings.data) )
-			if  ( ! requestSettings.data || !isMockDataEqual(handler.data, requestSettings.data) ) {
+			if ( ! requestSettings.data || !isMockDataEqual(handler.data, requestSettings.data) ) {
 				// They're not identical, do not mock this request
 				return null;
 			}
@@ -1438,6 +1436,7 @@ if (FactoryGuy !== undefined) {
 			// The request type doesn't match (GET vs. POST)
 			return null;
 		}
+
 		return handler;
 	}
 
@@ -1801,7 +1800,6 @@ if (FactoryGuy !== undefined) {
 			}
 
 			mockHandler = getMockForRequest( mockHandlers[k], requestSettings );
-
 			if(!mockHandler) {
 				// No valid mock found for this request
 				continue;
@@ -1853,7 +1851,7 @@ if (FactoryGuy !== undefined) {
 			}
 
 			copyUrlParameters(mockHandler, origSettings);
-		 	//console.log('here copyUrlParameters', 'mockHandler=>',mockHandler, 'requestSettings=>',requestSettings, 'origSettings=>',origSettings)
+
 			(function(mockHandler, requestSettings, origSettings, origHandler) {
 
 				mockRequest = _ajax.call($, $.extend(true, {}, origSettings, {
