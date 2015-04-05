@@ -39,7 +39,7 @@ TestHelper = Ember.Object.createWithMixins(FactoryGuy.testMixin,{
       profile: Profile,
       user: User,
       company: Company,
-      small_company: SmallCompany,
+      smallCompany: SmallCompany,
       property: Property,
       project: Project,
       person: Person,

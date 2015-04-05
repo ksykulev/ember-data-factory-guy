@@ -237,7 +237,7 @@ asyncTest("#handleFind with traits and arguments", function () {
 
 module('FactoryGuyTestMixin (using mockjax) with DS.ActiveModelAdapter', {
   setup: function () {
-    testHelper = TestHelper.setup(DS.ActiveModelAdapter);
+    testHelper = TestHelper.setup(DS.ActiveModelAdapter.extend());
     store = testHelper.getStore();
     make = function() {return FactoryGuy.make.apply(FactoryGuy,arguments)}
   },
@@ -254,6 +254,7 @@ module('FactoryGuyTestMixin (using mockjax) with DS.ActiveModelAdapter', {
 /////// with hash of parameters ///////////////////
 asyncTest("#handleCreate with no specific match", function() {
   Em.run(function() {
+    debugger;
     testHelper.handleCreate('profile');
 
     store.createRecord('profile', {description: 'whatever'}).save().then(function(profile) {
@@ -269,6 +270,7 @@ asyncTest("#handleCreate match some attributes", function() {
     var customDescription = "special description"
     var date = new Date();
 
+    debugger;
     testHelper.handleCreate('profile', {
       match: {description: customDescription}
     })

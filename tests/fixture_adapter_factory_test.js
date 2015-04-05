@@ -216,7 +216,7 @@ asyncTest("#createRecord can work for one-to-none associations", function () {
   store.find('user', user.id).then(function (user) {
     var smallCompanyJson = {name: 'small company', owner: user};
 
-    store.createRecord('small_company', smallCompanyJson).save()
+    store.createRecord('smallCompany', smallCompanyJson).save()
       .then(function (smallCompany) {
         return smallCompany.get('owner');
       }).then(function (owner) {

@@ -628,7 +628,8 @@ var MockCreateRequest = function(url, store, modelName, options) {
   this.handler = function(settings) {
     if (succeed) {
       if (matchArgs) {
-        var requestData = JSON.parse(settings.data)[modelName];
+        var rawRequest = JSON.parse(settings.data),
+            requestData = rawRequest[modelName] || rawRequest;
         for (var attribute in expectedRequest) {
           if (expectedRequest[attribute] &&
               requestData[attribute] != expectedRequest[attribute]) {

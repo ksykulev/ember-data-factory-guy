@@ -13,7 +13,7 @@ FactoryGuy.define("company", {
 
 })
 
-FactoryGuy.define("small_company", {
+FactoryGuy.define("smallCompany", {
   default: {
     name: 'Small Corp',
     projects: FactoryGuy.hasMany('project', 2)
